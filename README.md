@@ -1,6 +1,8 @@
 # Install
 
-Install Komodor with a CLI script
+Install Komodor with a script
+
+Go to https://app.komodor.io to generate your command!
 
 ## Run:
 

@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# This script installs Komodor's agent on your cluster, it uses helm and kubectl.
+# You can find the repo at: https://github.com/komodorio/Install
+
 printKomodorLogo() {
     echo "
     
