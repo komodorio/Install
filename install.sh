@@ -62,8 +62,8 @@ printSuccess() {
 }
 
 sendAnalytics() {
-    echo ""
-    # argument 1: event type
+    # We use analytics to keep track of what works and what doesn't work in our script, with the intention of creating the best installation experience possible.
+    # argument 1 = Event type
     curl --location --request POST 'https://api.amplitude.com/2/httpapi' \
         --header 'Content-Type: application/json' \
         --data-raw '{
@@ -95,8 +95,8 @@ printStep() {
 }
 
 isValidClusterName() {
-    # this validation is according to kubernetes valid resource names
-    # You can learn more in here: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/
+    # This validation follows the official K8s guide to valid object and resource names.
+    # Learn more: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/
     local CLUSTER_NAME=$1
 
     if [[ -z "$CLUSTER_NAME" ]]; then
@@ -110,8 +110,9 @@ isValidClusterName() {
 }
 
 getValidClusterName() {
+    # Get cluster name from kubectl current context, format and strip it of unnecessary characters and symbols, and validate it.
+    # If the validation succeeds, use the real cluster name; otherwise, use the default name.
     local KUBECTL_CLUSTER_NAME=$1
-    # set stripped cluster name as global var
     STRIP_CLUSTER_NAME=$(echo $KUBECTL_CLUSTER_NAME | cut -d "/" -f2)
     isValidClusterName $STRIP_CLUSTER_NAME
     if [ $? -eq 1 ]; then
@@ -122,6 +123,7 @@ getValidClusterName() {
 }
 
 getUserCustomClusterName() {
+    # Get cluster name from user
     echo -n "Enter cluster display name: "
     read -r FINAL_CLUSTER_NAME
     echo
@@ -135,6 +137,7 @@ getUserCustomClusterName() {
 }
 
 userChooseClusterName() {
+    # Get cluster name from user
     local USER_CLUSTER_NAME=$1
     printEnterClusterName
     echo "Choose your cluster display name in Komodor"
@@ -209,6 +212,7 @@ setClusterName() {
 }
 
 checkHelmRequirement() {
+    # Check if Helm is installed
     printStep 5 "Checking Helm Installation"
     if which helm >/dev/null; then
         echo 'Helm is installed'
@@ -221,6 +225,7 @@ checkHelmRequirement() {
 }
 
 installKomodorHelmPackage() {
+    # Install Komodor's agent on your cluster!
     printStep 6 "Installing Komodor"
     helm repo add komodorio https://helm-charts.komodor.io >/dev/null 2>&2
     # todo: need to think if we want komodorio output
@@ -230,6 +235,7 @@ installKomodorHelmPackage() {
         echo "Failed adding komodor chart repository..."
         exit 1
     fi
+    echo "Installing Komodor, this might take a minute"
     helm repo update >/dev/null 2>&2
     helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s >/dev/null 2>&2
     if [ $? -eq 0 ]; then
