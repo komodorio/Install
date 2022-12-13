@@ -154,7 +154,7 @@ userChooseClusterName() {
         getUserCustomClusterName
     else
         echo -e "\nWrong input\n"
-        userChooseClusterName
+        userChooseClusterName $USER_CLUSTER_NAME
     fi
 }
 
