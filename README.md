@@ -1,3 +1,5 @@
+![komodor logo](https://avatars.githubusercontent.com/u/60484489?s=200&v=4)
+
 # Komodor Installer
 
 Install Komodor (on macOS / Linux / WSL)
