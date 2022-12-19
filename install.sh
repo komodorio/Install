@@ -58,7 +58,7 @@ printSuccess() {
                                                  '--' '--'  
 "
 
-    echo "Open https://app.komodor.io/ to start using Komodor"
+    echo "Open https://app.komodor.com/ to start using Komodor"
 }
 
 sendAnalytics() {
