@@ -64,26 +64,28 @@ printSuccess() {
 sendAnalytics() {
     # We use analytics to keep track of what works and what doesn't work in our script, with the intention of creating the best installation experience possible.
     # argument 1 = Event type
-    curl --location --request POST 'https://api.amplitude.com/2/httpapi' \
+    local USER_API_KEY_VALUE=""
+    if [ -z "$USER_API_KEY" ]; then
+        # SESSION_VARIABLE is not set or is empty
+        # Use the alternate string
+        USER_API_KEY_VALUE=temp_user_id
+    else
+        # SESSION_VARIABLE is set and is not empty
+        # Use the value of SESSION_VARIABLE
+        USER_API_KEY_VALUE="$USER_API_KEY"
+    fi
+
+    curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
+        --header 'api-key: '$USER_API_KEY_VALUE'' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-    "api_key": "095eb9099b756ffd36a3258c77b6bca9",
-    "events": [
-        {
-          "event_type": "'$1'",
-                "device_id": 111111,        
-                 "user_id": "'$USER_EMAIL'",
-                "event_properties": {
-                    "email": "'$USER_EMAIL'",
-                    "origin": "self-serve-script"
-                },
-                "user_properties": {
-                    "email": "'$USER_EMAIL'",
-                    "accountOrigin": "self-serve",                    
-                }
+        "eventName": "'$1'",
+        "userId": "'$USER_EMAIL'",
+        "properties": {
+            "email": "'$USER_EMAIL'",
+            "origin": "self-serve-script"
         }
-    ]
-}' >/dev/null 2>&1
+    }' >/dev/null 2>&1
 }
 
 STEPS_COUNT=6
