@@ -64,19 +64,9 @@ printSuccess() {
 sendAnalytics() {
     # We use analytics to keep track of what works and what doesn't work in our script, with the intention of creating the best installation experience possible.
     # argument 1 = Event type
-    local USER_API_KEY_VALUE=""
-    if [ -z "$USER_API_KEY" ]; then
-        # SESSION_VARIABLE is not set or is empty
-        # Use the alternate string
-        USER_API_KEY_VALUE=temp_user_id
-    else
-        # SESSION_VARIABLE is set and is not empty
-        # Use the value of SESSION_VARIABLE
-        USER_API_KEY_VALUE="$USER_API_KEY"
-    fi
 
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
-        --header 'api-key: '$USER_API_KEY_VALUE'' \
+        --header 'api-key: '$USER_EMAIL'' \
         --header 'Content-Type: application/json' \
         --data-raw '{
         "eventName": "'$1'",
