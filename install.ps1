@@ -178,7 +178,7 @@ function startExecuting() {
 function checkKubectlRequirements() {
     printStep 2 "Checking for existing kubectl installation"
     if (!(Get-Command kubectl)) {
-        Write-Output "kubectl isn't installed on your machinem please install kubectl and run again."
+        Write-Output "kubectl isn't installed on your machine please install kubectl and run again."
         Write-Output "You can find the download links here: https://kubernetes.io/docs/tasks/tools/"
         exit
     }
