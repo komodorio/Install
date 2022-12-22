@@ -83,7 +83,8 @@ sendAnalytics() {
         "userId": "'$USER_EMAIL'",
         "properties": {
             "email": "'$USER_EMAIL'",
-            "origin": "self-serve-script"
+            "origin": "self-serve-script",
+            "scriptType": "bash"
         }
     }' >/dev/null 2>&1
 }
