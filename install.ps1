@@ -1,6 +1,5 @@
-# This script install komodor agent on your cluster. 
-# Usage: powershell install.ps1 <komodor_agent_api_key> <user_email>
-# Find more information at: https://github.com/komodorio/helm-charts/tree/master/charts/k8s-watcher#komodorio
+# This script installs Komodor's agent on your cluster, it uses helm and kubectl.
+# You can find the repo at: https://github.com/komodorio/Install
 
 $global:HELM_API_KEY = $args[0]
 $global:USER_EMAIL = $args[1]
