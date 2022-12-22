@@ -4,6 +4,10 @@
 
 Install Komodor (on macOS / Linux / WSL)
 
-`curl -Ls https://raw.githubusercontent.com/komodorio/Install/master/install.sh | HELM_API_KEY=<helm_api_key> USER_EMAIL=<user_email> bash`
+`curl -Ls https://raw.githubusercontent.com/komodorio/Install/master/install.sh | HELM_API_KEY=<komodor_agent_api_key> USER_EMAIL=<user_email> bash`
 
 Go to https://app.komodor.com to generate your command !
+
+Install komodor (on windows)
+
+[Net.ServicePointManager]::SecurityProtocol = 'tls12, tls'; (New-Object System.Net.WebClient).DownloadFile("https://raw.githubusercontent.com/komodorio/Install/master/install.ps1", "$env:TEMP\install.ps1"); & PowerShell.exe -ExecutionPolicy Bypass -File $env:TEMP\install.ps1 <komodor_agent_api_key> <user_email>;

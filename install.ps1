@@ -1,3 +1,10 @@
+# This script installs Komodor's agent on your cluster, it uses helm and kubectl.
+# You can find the repo at: https://github.com/komodorio/Install
+
+$global:HELM_API_KEY = $args[0]
+$global:USER_EMAIL = $args[1]
+
+
 function PrintKomodorLogo {
     $komodorLogo = """
                                                            
@@ -148,12 +155,12 @@ function userChooseClusterName($USER_CLUSTER_NAME) {
 
 function validateUserParams() {
     if ($HELM_API_KEY -eq $null) {
-        Write-Output "ERROR: Komodor installation script needs HELM_API_KEY session variable in order to run."
+        Write-Output "ERROR: Komodor installation script needs helm api key argument. Pass this as the first argument."
         exit 0
     }
 
     if ($USER_EMAIL -eq $null) {
-        Write-Output "ERROR: Komodor installation script needs USER_EMAIL session variable in order to run."
+        Write-Output "ERROR: Komodor installation script needs user email argument. Pass this as the second argument."
         exit 0
     }
 }
