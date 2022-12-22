@@ -83,7 +83,8 @@ sendAnalytics() {
         "userId": "'$USER_EMAIL'",
         "properties": {
             "email": "'$USER_EMAIL'",
-            "origin": "self-serve-script"
+            "origin": "self-serve-script",
+            "scriptType": "bash"
         }
     }' >/dev/null 2>&1
 }
@@ -183,7 +184,7 @@ startExecuting() {
 checkKubectlRequirements() {
     printStep 2 "Checking for existing kubectl installation"
     if ! command -v kubectl &>/dev/null; then
-        echo "kubectl isn't installed on your machinem please install kubectl and run again."
+        echo "kubectl isn't installed on your machine please install kubectl and run again."
         echo "You can find the download links here: https://kubernetes.io/docs/tasks/tools/"
         exit
     fi

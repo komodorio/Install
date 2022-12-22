@@ -63,6 +63,7 @@ function SendAnalytics($eventName) {
     $userId = $USER_EMAIL
     $email = $USER_EMAIL
     $origin = "self-serve-script"
+    $scriptType = "powershell"
 
     $body = @{
         eventName  = $eventName
@@ -70,6 +71,7 @@ function SendAnalytics($eventName) {
         properties = @{
             email  = $email
             origin = $origin
+            scriptType = $scriptType
         }
     } | ConvertTo-Json
 
@@ -83,7 +85,7 @@ $DEFAULT_CLUSTER_NAME = "default"
 
 function PrintStep($stepNum, $stepName) {
     Write-Output "-------------$stepNum/$STEPS_COUNT----------------"
-    Write-Output "$stepName'n"
+    Write-Output "$stepName`n"
 }
 
 function isValidClusterName($CLUSTER_NAME) {
@@ -176,7 +178,7 @@ function startExecuting() {
 function checkKubectlRequirements() {
     printStep 2 "Checking for existing kubectl installation"
     if (!(Get-Command kubectl)) {
-        Write-Output "kubectl isn't installed on your machinem please install kubectl and run again."
+        Write-Output "kubectl isn't installed on your machine please install kubectl and run again."
         Write-Output "You can find the download links here: https://kubernetes.io/docs/tasks/tools/"
         exit
     }
@@ -198,7 +200,7 @@ function setClusterName() {
     # This function set global var FINAL_CLUSTER_NAME, holds the cluster name the user will choose
     printStep 4 "Choosing cluster name"
     $CLUSTER_NAME = kubectl config current-context
-    Write-Output "We're going to install komodor agent on cluster:'n$CLUSTER_NAME"
+    Write-Output "We're going to install komodor agent on cluster:`n$CLUSTER_NAME"
 
     $KUBECTL_VALID_CLUSTER_NAME = getValidClusterName $CLUSTER_NAME
     
