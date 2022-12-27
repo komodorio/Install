@@ -69,9 +69,46 @@ function SendAnalytics($eventName) {
         eventName  = $eventName
         userId     = $userId
         properties = @{
-            email  = $email
-            origin = $origin
+            email      = $email
+            origin     = $origin
             scriptType = $scriptType
+        }
+    } | ConvertTo-Json
+
+    Invoke-RestMethod -Method POST -Uri 'https://api.komodor.com/analytics/segment/track' `
+        -Headers @{ "api-key" = $apiKey; "Content-Type" = "application/json" } `
+        -Body $body > $null
+}
+
+function sendErrorAnalytics($eventName, $errorMessage) {
+    # We use analytics to keep track of what works and what doesn't work in our script, with the intention of creating the best installation experience possible.
+    # argument 1 = Event type
+    $USER_API_KEY_VALUE = ""
+    if ([string]::IsNullOrEmpty($USER_API_KEY)) {
+        # SESSION_VARIABLE is not set or is empty
+        # Use the alternate string
+        $USER_API_KEY_VALUE = "temp_user_id"
+    }
+    else {
+        # SESSION_VARIABLE is set and is not empty
+        # Use the value of SESSION_VARIABLE
+        $USER_API_KEY_VALUE = "$USER_API_KEY"
+    }
+
+    $apiKey = $USER_API_KEY_VALUE
+    $userId = $USER_EMAIL
+    $email = $USER_EMAIL
+    $origin = "self-serve-script"
+    $scriptType = "powershell"
+
+    $body = @{
+        eventName  = $eventName
+        userId     = $userId
+        properties = @{
+            email      = $email
+            origin     = $origin
+            scriptType = $scriptType
+            error      = "$errorMessage"
         }
     } | ConvertTo-Json
 
@@ -96,7 +133,7 @@ function isValidClusterName($CLUSTER_NAME) {
     }
     if ($CLUSTER_NAME -match '^[a-z]') {
         if ($CLUSTER_NAME -match '^[a-z0-9.-]+$') {
-            if ($CLUSTER_NAME -match '^([a-z]([a-z0-9-]*[a-z0-9])?\.)*([a-z]([a-z0-9-]*[a-z0-9])?)$') {
+            if ($CLUSTER_NAME -match '^([a-z]([a-z0-9-][a-z0-9])?\.)([a-z]([a-z0-9-]*[a-z0-9])?)$') {
                 if ($CLUSTER_NAME -match '[a-z0-9]$') {
                     return 1
                 }
@@ -168,7 +205,7 @@ function validateUserParams() {
 }
 
 function startExecuting() {
-    Write-Output "***** This might take about 3 minutes *****"
+    Write-Output "** This might take about 3 minutes **"
     printKomodorLogo
     printStep 1 "Starting installation"
     sendAnalytics USER_RAN_SCRIPT_INSTALATION
@@ -238,13 +275,14 @@ function installKomodorHelmPackage() {
     Write-Output "Installing Komodor, this might take a minute"
     helm repo update 2>$null | Out-Null
 
-    helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s 2>$null | Out-Null
-    
+    $INSTALL_OUTPUT = $( $output = & helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s) 2>&1
+
     if ($LASTEXITCODE -eq 0) {
         Write-Output "Komodor installed successfully!"
     }
     else {
         Write-Output "Komodor install failed..."
+        sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
         exit 1
     }
     sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
