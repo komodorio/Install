@@ -263,6 +263,10 @@ function checkHelmRequirement() {
 function installKomodorHelmPackage() {
     # Install Komodor's agent on your cluster!
     printStep 6 "Installing Komodor"
+    Write-Output "Running the following helm commands:"
+    Write-Output "- $ helm repo add komodorio https://helm-charts.komodor.io"
+    Write-Output "- $ helm repo update"
+    Write-Output "- $ helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s"
     helm repo add komodorio https://helm-charts.komodor.io 2>$null | Out-Null
 
     if ($LASTEXITCODE -eq 0) {
