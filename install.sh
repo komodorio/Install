@@ -76,7 +76,26 @@ sendAnalytics() {
             "origin": "self-serve-script",
             "scriptType": "bash"
         }
-    }' >/dev/null 2>&1
+    }'
+}
+
+sendErrorAnalytics() {
+    # We collect error logs to learn about and improve the installation process.
+    # argument 1 = The error message
+    echo $1
+    curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
+        --header 'api-key: "'"$USER_EMAIL"'"' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+    "eventName": "SCRIPT_ERROR_HELM_INSTALL_STEP",
+    "userId": "'"$USER_EMAIL"'",
+    "properties": {
+        "email": "'"$USER_EMAIL"'",
+        "origin": "self-serve-script",
+        "error": "'"$1"'",
+        "scriptType": "bash"
+    }
+}'
 }
 
 STEPS_COUNT=6
@@ -220,8 +239,11 @@ checkHelmRequirement() {
 installKomodorHelmPackage() {
     # Install Komodor's agent on your cluster!
     printStep 6 "Installing Komodor"
+    echo "Running the following helm commands:"
+    echo "- $ helm repo add komodorio https://helm-charts.komodor.io"
+    echo "- $ helm repo update"
+    echo "- $ helm upgrade --install k8s-watcher komodorio/k8s-watcher"
     helm repo add komodorio https://helm-charts.komodor.io >/dev/null 2>&2
-    # todo: need to think if we want komodorio output
     if [ $? -eq 0 ]; then
         echo "Added komodor chart repository successfully!"
     else
@@ -230,14 +252,15 @@ installKomodorHelmPackage() {
     fi
     echo "Installing Komodor, this might take a minute"
     helm repo update >/dev/null 2>&2
-    helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s >/dev/null 2>&2
+    INSTALL_OUTPUT=$(helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s 2>&1)
     if [ $? -eq 0 ]; then
         echo "Komodor installed successfully!"
+        sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
     else
         echo "Komodor install failed..."
+        sendErrorAnalytics "$INSTALL_OUTPUT"
         exit 1
     fi
-    sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
     printSuccess
 }
 
