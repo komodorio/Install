@@ -82,17 +82,17 @@ sendAnalytics() {
 sendErrorAnalytics() {
     # We collect error logs to learn about and improve the installation process.
     # argument 1 = The error message
-    echo $1
+    echo $2
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
         --header 'api-key: "'"$USER_EMAIL"'"' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-    "eventName": "SCRIPT_ERROR_HELM_INSTALL_STEP",
+    "eventName": "'"$1"'",
     "userId": "'"$USER_EMAIL"'",
     "properties": {
         "email": "'"$USER_EMAIL"'",
         "origin": "self-serve-script",
-        "error": "'"$1"'",
+        "error": "'"$2"'",
         "scriptType": "bash"
     }
 }'
@@ -258,7 +258,7 @@ installKomodorHelmPackage() {
         sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
     else
         echo "Komodor install failed..."
-        sendErrorAnalytics "$INSTALL_OUTPUT"
+        sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
         exit 1
     fi
     printSuccess
