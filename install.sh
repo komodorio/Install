@@ -282,6 +282,7 @@ installKomodorHelmPackage() {
         sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
     else
         echo "Komodor install failed..."
+        echo "$INSTALL_OUTPUT"
         sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
         exit 1
     fi
