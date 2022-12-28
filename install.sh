@@ -71,8 +71,9 @@ sendClusterConnectivityErrorEvent() {
     getNs="$(kubectl get ns default -v6)"
     getPods="$(kubectl get pod -o wide -v6)"
 
-    properties="$(jq -nc --arg getNs "$getNs" --arg getPods "$getPods" --arg email "$USER_EMAIL" --arg origin "self-serve-script" --arg scriptType "bash" '$ARGS.named')"
-    data='{"eventName": "USER_CLUSTER_CONNECTIVITY_SUCCESS_ERROR","userId": "'$USER_EMAIL'","properties": '$properties'}'
+    properties='{"getPods": "'"$getPods"'", "getNs": "'"$getNs"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
+
+    data='{"eventName": "ARIEL_TEST","userId": "'$USER_EMAIL'", "properties": '$properties'}'
 
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
         --header 'api-key: '$USER_EMAIL'' \
@@ -107,7 +108,7 @@ sendErrorAnalytics() {
     # argument 1 = The event name
     # argument 2 = The error message
 
-    properties="$(jq -nc --arg error "$2" --arg email "$USER_EMAIL" --arg origin "self-serve-script" --arg scriptType "bash" '$ARGS.named')"
+    properties='{"error": "'"$2"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
     data='{"eventName": "'$1'","userId": "'$USER_EMAIL'","properties": '$properties'}'
 
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
