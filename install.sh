@@ -68,10 +68,10 @@ sendClusterConnectivityErrorEvent() {
     echo "$ kubectl get ns default -v6"
     echo "$ kubectl get pod -o wide -v6"
 
-    getNs="$(kubectl get ns default -v6)"
-    getPods="$(kubectl get pod -o wide -v6)"
+    getNsDefault="$(kubectl get ns default -v6)"
+    getAllNs="$(kubectl get ns -v6)"
 
-    properties='{"getPods": "'"$getPods"'", "getNs": "'"$getNs"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
+    properties='{"getAllNs": "'"$getAllNs"'", "getNsDefault": "'"$getNs"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
 
     data='{"eventName": "ARIEL_TEST","userId": "'$USER_EMAIL'", "properties": '$properties'}'
 
