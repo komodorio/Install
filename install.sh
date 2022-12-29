@@ -66,7 +66,7 @@ sendClusterConnectivityErrorEvent() {
 
     echo 'Running the following commands for troubleshooting and analytics:'
     echo "$ kubectl get ns default -v6"
-    echo "$ kubectl get pod -o wide -v6"
+    echo "$ kubectl get ns -v6"
 
     getNsDefault="$(kubectl get ns default -v6)"
     getAllNs="$(kubectl get ns -v6)"
