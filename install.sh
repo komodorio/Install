@@ -61,6 +61,31 @@ printSuccess() {
     echo "Open https://app.komodor.com/ to start using Komodor"
 }
 
+sendClusterConnectivityErrorEvent() {
+    # We collect error logs to learn about and improve the installation process.
+
+    echo 'Running the following commands for troubleshooting and analytics:'
+    echo "$ kubectl get ns default -v6"
+    echo "$ kubectl get ns -v6"
+
+    getNsDefault="$(kubectl get ns default -v6)"
+    getAllNs="$(kubectl get ns -v6)"
+
+    properties='{"getAllNs": "'"$getAllNs"'", "getNsDefault": "'"$getNs"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
+
+    data='{"eventName": "ARIEL_TEST","userId": "'$USER_EMAIL'", "properties": '$properties'}'
+
+    curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
+        --header 'api-key: '$USER_EMAIL'' \
+        --header 'Content-Type: application/json' \
+        -d @<(
+            cat <<EOF
+$data
+EOF
+        )
+
+}
+
 sendAnalytics() {
     # We use analytics to keep track of what works and what doesn't work in our script, with the intention of creating the best installation experience possible.
     # argument 1 = Event type
@@ -78,24 +103,23 @@ sendAnalytics() {
         }
     }'
 }
-
 sendErrorAnalytics() {
     # We collect error logs to learn about and improve the installation process.
-    # argument 1 = The error message
-    echo $2
+    # argument 1 = The event name
+    # argument 2 = The error message
+
+    properties='{"error": "'"$2"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
+    data='{"eventName": "'$1'","userId": "'$USER_EMAIL'","properties": '$properties'}'
+
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
-        --header 'api-key: "'"$USER_EMAIL"'"' \
+        --header 'api-key: '$USER_EMAIL'' \
         --header 'Content-Type: application/json' \
-        --data-raw '{
-    "eventName": "'"$1"'",
-    "userId": "'"$USER_EMAIL"'",
-    "properties": {
-        "email": "'"$USER_EMAIL"'",
-        "origin": "self-serve-script",
-        "error": "'"$2"'",
-        "scriptType": "bash"
-    }
-}'
+        -d @<(
+            cat <<EOF
+$data
+EOF
+        )
+
 }
 
 STEPS_COUNT=6
@@ -202,9 +226,10 @@ checkKubectlRequirements() {
 }
 
 checkConnectionToCluster() {
-    printStep 3 "Checking Cluster Connection"
+    printStep 3 "Checking Cluster Connection with command: kubectl get ns default"
     if ! kubectl get ns default >/dev/null 2>&2; then
-        echo 'Kubernetes cluster connectivity test failed...' >&2
+        echo 'Kubernetes cluster connectivity test failed... please make sure your cluster is up and your context is correct.' >&2
+        sendClusterConnectivityErrorEvent
         exit 1
     fi
     echo 'Kubernetes cluster connectivity test success!'
@@ -258,6 +283,7 @@ installKomodorHelmPackage() {
         sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
     else
         echo "Komodor install failed..."
+        echo "$INSTALL_OUTPUT"
         sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
         exit 1
     fi
