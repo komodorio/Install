@@ -73,7 +73,7 @@ sendClusterConnectivityErrorEvent() {
 
     properties='{"getAllNs": "'"$getAllNs"'", "getNsDefault": "'"$getNs"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
 
-    data='{"eventName": "ARIEL_TEST","userId": "'$USER_EMAIL'", "properties": '$properties'}'
+    data='{"eventName": "USER_CLUSTER_CONNECTIVITY_SUCCESS_ERROR","userId": "'$USER_EMAIL'", "properties": '$properties'}'
 
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
         --header 'api-key: '$USER_EMAIL'' \
