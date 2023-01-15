@@ -3,8 +3,6 @@
 # This script installs Komodor's agent on your cluster, it uses helm and kubectl.
 # You can find the repo at: https://github.com/komodorio/Install
 
-INITIAL_CONTEXT=$(kubectl config current-context)
-
 printKomodorLogo() {
     echo "
     
@@ -61,16 +59,6 @@ printSuccess() {
 "
 
     echo "Open https://app.komodor.com/ to start using Komodor"
-}
-
-exitAndResetContext() {
-    if [ -z "$INITIAL_CONTEXT" ]; then
-        exit 1
-    else
-        echo "Switching back to initial context:"
-        kubectl config use-context $INITIAL_CONTEXT
-    fi
-    exit 1
 }
 
 sendClusterConnectivityErrorEvent() {
@@ -227,18 +215,16 @@ userChooseClusterName() {
 validateUserParams() {
     if [[ -z "$HELM_API_KEY" ]]; then
         echo "ERROR: Komodor installation script needs HELM_API_KEY session variable in order to run."
-        exitAndResetContext
+        exit 1
     fi
 
     if [[ -z "$USER_EMAIL" ]]; then
         echo "ERROR: Komodor installation script needs USER_EMAIL session variable in order to run."
-        exitAndResetContext
+        exit 1
     fi
 }
 
 startExecuting() {
-    echo "yooooo"
-    echo "$INITIAL_CONTEXT"
     echo "***** This might take about 3 minutes *****"
     printKomodorLogo
     printStep 1 "Starting installation"
@@ -251,7 +237,7 @@ checkKubectlRequirements() {
     if ! command -v kubectl &>/dev/null; then
         echo "kubectl isn't installed on your machine please install kubectl and run again."
         echo "You can find the download links here: https://kubernetes.io/docs/tasks/tools/"
-        exitAndResetContext
+        exit 1
     fi
     echo "Kubectl is already installed!"
     sendAnalytics USER_HAS_KUBECTL
@@ -262,7 +248,7 @@ checkConnectionToCluster() {
     if ! kubectl get ns default >/dev/null 2>&2; then
         echo 'Kubernetes cluster connectivity test failed... please make sure your cluster is up and your context is correct.' >&2
         sendClusterConnectivityErrorEvent
-        exitAndResetContext
+        exit 1
     fi
     echo 'Kubernetes cluster connectivity test success!'
     sendAnalytics USER_CLUSTER_CONNECTIVITY_SUCCESS
@@ -293,6 +279,7 @@ chooseContext() {
             if [[ -n $context ]]; then
                 sendAnalytics USER_CHOSE_CONTEXT_SUCCESS
                 # Switch to selected context
+                echo "Switching context to: "
                 kubectl config use-context $context
                 echo "Context successfully changed to: $context"
                 break
@@ -303,7 +290,7 @@ chooseContext() {
     else
         sendContextAnalytics ERROR "$contexts"
         echo "An error occured when trying to execute: $ kubectl config get-contexts -o name"
-        exitAndResetContext
+        exit 1
     fi
 
 }
@@ -316,7 +303,7 @@ checkHelmRequirement() {
     else
         echo 'Helm is not installed...'
         echo "You can get it here: https://helm.sh/docs/intro/install/"
-        exitAndResetContext
+        exit 1
     fi
     sendAnalytics USER_HAS_HELM
 }
@@ -333,7 +320,7 @@ installKomodorHelmPackage() {
         echo "Added komodor chart repository successfully!"
     else
         echo "Failed adding komodor chart repository..."
-        exitAndResetContext
+        exit 1
     fi
     echo "Installing Komodor, this might take a minute"
     helm repo update >/dev/null 2>&2
@@ -345,12 +332,10 @@ installKomodorHelmPackage() {
         echo "Komodor install failed..."
         echo "$INSTALL_OUTPUT"
         sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
-        exitAndResetContext
+        exit 1
     fi
     printSuccess
     # Make sure the user returns to the initial kube context
-    echo "Switching back to initial context:"
-    kubectl config use-context $INITIAL_CONTEXT
 }
 
 startExecuting            # step 1
