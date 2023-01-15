@@ -349,6 +349,7 @@ installKomodorHelmPackage() {
     fi
     printSuccess
     # Make sure the user returns to the initial kube context
+    echo "Switching back to initial context:"
     kubectl config use-context $INITIAL_CONTEXT
 }
 
