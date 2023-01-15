@@ -335,7 +335,6 @@ installKomodorHelmPackage() {
         exit 1
     fi
     printSuccess
-    # Make sure the user returns to the initial kube context
 }
 
 startExecuting            # step 1
