@@ -352,10 +352,10 @@ installKomodorHelmPackage() {
     kubectl config use-context $INITIAL_CONTEXT
 }
 
-# startExecuting            # step 1
-# checkKubectlRequirements  # step 2
-chooseContext            # step 3
-checkConnectionToCluster # step 4
-# setClusterName            # step 5
-# checkHelmRequirement      # step 6
-# installKomodorHelmPackage # step 7
+startExecuting            # step 1
+checkKubectlRequirements  # step 2
+chooseContext             # step 3
+checkConnectionToCluster  # step 4
+setClusterName            # step 5
+checkHelmRequirement      # step 6
+installKomodorHelmPackage # step 7
