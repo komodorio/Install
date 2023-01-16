@@ -65,13 +65,13 @@ sendClusterConnectivityErrorEvent() {
     # We collect error logs to learn about and improve the installation process.
 
     echo 'Running the following commands for troubleshooting and analytics:'
-    echo "$ kubectl get ns default -v6"
-    echo "$ kubectl get ns -v6"
+    echo "$ kubectl get ns default "
+    echo "$ kubectl get ns "
 
-    getNsDefault="$(kubectl get ns default -v6)"
-    getAllNs="$(kubectl get ns -v6)"
+    getNsDefault="$(kubectl get ns default 2>&1)"
+    getAllNs="$(kubectl get ns 2>&1)"
 
-    properties='{"getAllNs": "'"$getAllNs"'", "getNsDefault": "'"$getNs"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
+    properties='{"getAllNs": "'"$getAllNs"'", "getNsDefault": "'"$getNsDefault"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
 
     data='{"eventName": "USER_CLUSTER_CONNECTIVITY_SUCCESS_ERROR","userId": "'$USER_EMAIL'", "properties": '$properties'}'
 
@@ -103,6 +103,24 @@ sendAnalytics() {
         }
     }'
 }
+
+sendContextAnalytics() {
+    # We use analytics to keep track of what works and what doesn't work in our script, with the intention of creating the best installation experience possible.
+    # argument 1 = Event type
+    eventName="USER_CONTEXT_OUTPUT_$1"
+    properties='{"context": "'"$2"'", "email": "'"$USER_EMAIL"'", "origin": "self-serve-script", "scriptType": "bash"}'
+    data='{"eventName": "'$eventName'","userId": "'$USER_EMAIL'", "properties": '$properties'}'
+
+    curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
+        --header 'api-key: '$USER_EMAIL'' \
+        --header 'Content-Type: application/json' \
+        -d @<(
+            cat <<EOF
+$data
+EOF
+        )
+}
+
 sendErrorAnalytics() {
     # We collect error logs to learn about and improve the installation process.
     # argument 1 = The event name
@@ -197,12 +215,12 @@ userChooseClusterName() {
 validateUserParams() {
     if [[ -z "$HELM_API_KEY" ]]; then
         echo "ERROR: Komodor installation script needs HELM_API_KEY session variable in order to run."
-        exit 0
+        exit 1
     fi
 
     if [[ -z "$USER_EMAIL" ]]; then
         echo "ERROR: Komodor installation script needs USER_EMAIL session variable in order to run."
-        exit 0
+        exit 1
     fi
 }
 
@@ -219,14 +237,14 @@ checkKubectlRequirements() {
     if ! command -v kubectl &>/dev/null; then
         echo "kubectl isn't installed on your machine please install kubectl and run again."
         echo "You can find the download links here: https://kubernetes.io/docs/tasks/tools/"
-        exit
+        exit 1
     fi
     echo "Kubectl is already installed!"
     sendAnalytics USER_HAS_KUBECTL
 }
 
 checkConnectionToCluster() {
-    printStep 3 "Checking Cluster Connection with command: kubectl get ns default"
+    printStep 4 "Checking Cluster Connection with command: kubectl get ns default"
     if ! kubectl get ns default >/dev/null 2>&2; then
         echo 'Kubernetes cluster connectivity test failed... please make sure your cluster is up and your context is correct.' >&2
         sendClusterConnectivityErrorEvent
@@ -238,7 +256,7 @@ checkConnectionToCluster() {
 
 setClusterName() {
     # This function set global var FINAL_CLUSTER_NAME, holds the cluster name the user will choose
-    printStep 4 "Choosing cluster name"
+    printStep 5 "Choosing cluster name"
     local CLUSTER_NAME=$(kubectl config current-context)
     echo -e "We're going to install komodor agent on cluster: \n${CLUSTER_NAME}"
 
@@ -248,9 +266,38 @@ setClusterName() {
     sendAnalytics USER_CHOSE_CLUSTER_NAME
 }
 
+chooseContext() {
+    # Get all k8s contexts
+    printStep 3 "Select the relevant kube context"
+    contexts=$(kubectl config get-contexts -o name 2>&1)
+
+    if [ $? -eq 0 ]; then
+        sendContextAnalytics SUCCESS "$contexts"
+        # Print contexts to user and ask them to select one
+        echo "Please select a context:"
+        select context in $contexts; do
+            if [[ -n $context ]]; then
+                sendAnalytics USER_CHOSE_CONTEXT_SUCCESS
+                # Switch to selected context
+                echo "Switching context to: "
+                kubectl config use-context $context
+                echo "Context successfully changed to: $context"
+                break
+            else
+                echo "Invalid selection. Please try again."
+            fi
+        done
+    else
+        sendContextAnalytics ERROR "$contexts"
+        echo "An error occured when trying to execute: $ kubectl config get-contexts -o name"
+        exit 1
+    fi
+
+}
+
 checkHelmRequirement() {
     # Check if Helm is installed
-    printStep 5 "Checking Helm Installation"
+    printStep 6 "Checking Helm Installation"
     if which helm >/dev/null; then
         echo 'Helm is installed'
     else
@@ -263,7 +310,7 @@ checkHelmRequirement() {
 
 installKomodorHelmPackage() {
     # Install Komodor's agent on your cluster!
-    printStep 6 "Installing Komodor"
+    printStep 7 "Installing Komodor"
     echo "Running the following helm commands:"
     echo "- $ helm repo add komodorio https://helm-charts.komodor.io"
     echo "- $ helm repo update"
@@ -292,7 +339,8 @@ installKomodorHelmPackage() {
 
 startExecuting            # step 1
 checkKubectlRequirements  # step 2
-checkConnectionToCluster  # step 3
-setClusterName            # step 4
-checkHelmRequirement      # step 5
-installKomodorHelmPackage # step 6
+chooseContext             # step 3
+checkConnectionToCluster  # step 4
+setClusterName            # step 5
+checkHelmRequirement      # step 6
+installKomodorHelmPackage # step 7
