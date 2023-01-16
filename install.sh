@@ -244,7 +244,7 @@ checkKubectlRequirements() {
 }
 
 checkConnectionToCluster() {
-    printStep 3 "Checking Cluster Connection with command: kubectl get ns default"
+    printStep 4 "Checking Cluster Connection with command: kubectl get ns default"
     if ! kubectl get ns default >/dev/null 2>&2; then
         echo 'Kubernetes cluster connectivity test failed... please make sure your cluster is up and your context is correct.' >&2
         sendClusterConnectivityErrorEvent
@@ -297,7 +297,7 @@ chooseContext() {
 
 checkHelmRequirement() {
     # Check if Helm is installed
-    printStep 5 "Checking Helm Installation"
+    printStep 6 "Checking Helm Installation"
     if which helm >/dev/null; then
         echo 'Helm is installed'
     else
@@ -310,7 +310,7 @@ checkHelmRequirement() {
 
 installKomodorHelmPackage() {
     # Install Komodor's agent on your cluster!
-    printStep 6 "Installing Komodor"
+    printStep 7 "Installing Komodor"
     echo "Running the following helm commands:"
     echo "- $ helm repo add komodorio https://helm-charts.komodor.io"
     echo "- $ helm repo update"
@@ -337,10 +337,10 @@ installKomodorHelmPackage() {
     printSuccess
 }
 
-startExecuting           # step 1
-checkKubectlRequirements # step 2
-# chooseContext             # step 3
-checkConnectionToCluster  # step 3
-setClusterName            # step 4
-checkHelmRequirement      # step 5
-installKomodorHelmPackage # step 6
+startExecuting            # step 1
+checkKubectlRequirements  # step 2
+chooseContext             # step 3
+checkConnectionToCluster  # step 4
+setClusterName            # step 5
+checkHelmRequirement      # step 6
+installKomodorHelmPackage # step 7
