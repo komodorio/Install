@@ -76,7 +76,7 @@ sendClusterConnectivityErrorEvent() {
     data='{"eventName": "USER_CLUSTER_CONNECTIVITY_SUCCESS_ERROR","userId": "'$USER_EMAIL'", "properties": '$properties'}'
 
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
-        --header 'api-key: '$USER_EMAIL'' \
+        --header 'api-key: '"$USER_EMAIL"'' \
         --header 'Content-Type: application/json' \
         -d @<(
             cat <<EOF
@@ -91,13 +91,13 @@ sendAnalytics() {
     # argument 1 = Event type
 
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
-        --header 'api-key: '$USER_EMAIL'' \
+        --header 'api-key: '"$USER_EMAIL"'' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-        "eventName": "'$1'",
-        "userId": "'$USER_EMAIL'",
+        "eventName": "'"$1"'",
+        "userId": "'"$USER_EMAIL"'",
         "properties": {
-            "email": "'$USER_EMAIL'",
+            "email": "'"$USER_EMAIL"'",
             "origin": "self-serve-script",
             "scriptType": "bash"
         }
@@ -112,7 +112,7 @@ sendContextAnalytics() {
     data='{"eventName": "'$eventName'","userId": "'$USER_EMAIL'", "properties": '$properties'}'
 
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
-        --header 'api-key: '$USER_EMAIL'' \
+        --header 'api-key: '"$USER_EMAIL"'' \
         --header 'Content-Type: application/json' \
         -d @<(
             cat <<EOF
@@ -130,7 +130,7 @@ sendErrorAnalytics() {
     data='{"eventName": "'$1'","userId": "'$USER_EMAIL'","properties": '$properties'}'
 
     curl --location --request POST 'https://api.komodor.com/analytics/segment/track' \
-        --header 'api-key: '$USER_EMAIL'' \
+        --header 'api-key: '"$USER_EMAIL"'' \
         --header 'Content-Type: application/json' \
         -d @<(
             cat <<EOF
@@ -167,10 +167,10 @@ getValidClusterName() {
     # Get cluster name from kubectl current context, format and strip it of unnecessary characters and symbols, and validate it.
     # If the validation succeeds, use the real cluster name; otherwise, use the default name.
     local KUBECTL_CLUSTER_NAME=$1
-    STRIP_CLUSTER_NAME=$(echo $KUBECTL_CLUSTER_NAME | cut -d "/" -f2)
-    isValidClusterName $STRIP_CLUSTER_NAME
+    STRIP_CLUSTER_NAME=$(echo "$KUBECTL_CLUSTER_NAME" | cut -d "/" -f2)
+    isValidClusterName "$STRIP_CLUSTER_NAME"
     if [ $? -eq 1 ]; then
-        echo $STRIP_CLUSTER_NAME
+        echo "$STRIP_CLUSTER_NAME"
     else
         echo $DEFAULT_CLUSTER_NAME
     fi
@@ -181,7 +181,7 @@ getUserCustomClusterName() {
     echo -n "Enter cluster display name: "
     read -r FINAL_CLUSTER_NAME
     echo
-    isValidClusterName $FINAL_CLUSTER_NAME
+    isValidClusterName "$FINAL_CLUSTER_NAME"
     if [ $? -eq 1 ]; then
         return
     else
@@ -208,7 +208,7 @@ userChooseClusterName() {
         getUserCustomClusterName
     else
         echo -e "\nWrong input\n"
-        userChooseClusterName $USER_CLUSTER_NAME
+        userChooseClusterName "$USER_CLUSTER_NAME"
     fi
 }
 
@@ -260,9 +260,9 @@ setClusterName() {
     local CLUSTER_NAME=$(kubectl config current-context)
     echo -e "We're going to install komodor agent on cluster: \n${CLUSTER_NAME}"
 
-    local KUBECTL_VALID_CLUSTER_NAME=$(getValidClusterName $CLUSTER_NAME)
+    local KUBECTL_VALID_CLUSTER_NAME=$(getValidClusterName "$CLUSTER_NAME")
     # we use dev tty in order to read from user input after overriding it to /dev/null
-    userChooseClusterName $KUBECTL_VALID_CLUSTER_NAME </dev/tty
+    userChooseClusterName "$KUBECTL_VALID_CLUSTER_NAME" </dev/tty
     sendAnalytics USER_CHOSE_CLUSTER_NAME
 }
 
@@ -280,7 +280,7 @@ chooseContext() {
                 sendAnalytics USER_CHOSE_CONTEXT_SUCCESS
                 # Switch to selected context
                 echo "Switching context to: "
-                kubectl config use-context $context
+                kubectl config use-context "$context"
                 echo "Context successfully changed to: $context"
                 break
             else
@@ -324,7 +324,7 @@ installKomodorHelmPackage() {
     fi
     echo "Installing Komodor, this might take a minute"
     helm repo update >/dev/null 2>&2
-    INSTALL_OUTPUT=$(helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s 2>&1)
+    INSTALL_OUTPUT=$(helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set apiKey="$HELM_API_KEY" --set watcher.clusterName="$FINAL_CLUSTER_NAME" --wait --timeout=90s 2>&1)
     if [ $? -eq 0 ]; then
         echo "Komodor installed successfully!"
         sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
