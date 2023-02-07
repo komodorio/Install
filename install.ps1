@@ -280,6 +280,8 @@ function installKomodorHelmPackage() {
     else {
         Write-Output "Komodor install failed..."
         sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
+        $DIAGNOSTICS=$( kubectl -n $FINAL_CLUSTER_NAME get events --sort-by='{.lastTimestamp}' ) 2>&1
+        sendErrorAnalytics "LAST_STEP_ERROR_DIAGNOSTICS" "$DIAGNOSTICS"        
         exit 1
     }
     sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
