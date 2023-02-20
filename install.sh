@@ -332,8 +332,8 @@ installKomodorHelmPackage() {
         echo "Komodor install failed..."
         echo "$INSTALL_OUTPUT"
         sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
-        DIAGNOSTICS=$(kubectl -n $FINAL_CLUSTER_NAME get events --sort-by='{.lastTimestamp}' 2>&1)
-        sendErrorAnalytics "LAST_STEP_ERROR_DIAGNOSTICS" "$DIAGNOSTICS"
+        DIAGNOSTICS=$(helm history k8s-watcher -o json 2>&1)
+        sendErrorAnalytics "LAST_STEP_ERROR_DIAGNOSTICS_V2" "$DIAGNOSTICS"
         exit 1
     fi
     printSuccess
