@@ -4,7 +4,7 @@
 
 ## Install Komodor (on macOS / Linux / WSL)
 
-`HELM_API_KEY=<komodor_agent_api_key> USER_EMAIL=<user_email> bash <(curl -s -Ls https://raw.githubusercontent.com/komodorio/Install/ master/install.sh)
+`HELM_API_KEY=<komodor_agent_api_key> USER_EMAIL=<user_email> bash <(curl -s -Ls https://raw.githubusercontent.com/komodorio/Install/master/install.sh)
 
 ## Install komodor (on windows)
 
