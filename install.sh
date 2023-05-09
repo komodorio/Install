@@ -315,11 +315,13 @@ installKomodorHelmPackage() {
     echo "- $ helm repo add komodorio https://helm-charts.komodor.io"
     echo "- $ helm repo update"
     echo "- $ helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set watcher.actions.podExec=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s"
-    helm repo add komodorio https://helm-charts.komodor.io >/dev/null 2>&2
+    INSTALL_OUTPUT=$(helm repo add komodorio https://helm-charts.komodor.io 2>&1)
     if [ $? -eq 0 ]; then
         echo "Added komodor chart repository successfully!"
     else
         echo "Failed adding komodor chart repository..."
+        echo "$INSTALL_OUTPUT"
+        sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
         exit 1
     fi
     echo "Installing Komodor, this might take a minute"
