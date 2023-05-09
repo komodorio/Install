@@ -321,7 +321,7 @@ installKomodorHelmPackage() {
     else
         echo "Failed adding komodor chart repository..."
         echo "$INSTALL_OUTPUT"
-        sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_SUCCESS_ERROR" "$INSTALL_OUTPUT"
+        sendErrorAnalytics "USER_INSTALL_KOMODOR_SCRIPT_REPO_ERROR" "$INSTALL_OUTPUT"
         exit 1
     fi
     echo "Installing Komodor, this might take a minute"
