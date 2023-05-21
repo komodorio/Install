@@ -314,7 +314,7 @@ installKomodorHelmPackage() {
     echo "Running the following helm commands:"
     echo "- $ helm repo add komodorio https://helm-charts.komodor.io"
     echo "- $ helm repo update"
-    echo "- $ helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set watcher.actions.podExec=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s"
+    echo "- $ helm upgrade --install k8s-watcher komodorio/k8s-watcher --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s"
     INSTALL_OUTPUT=$(helm repo add komodorio https://helm-charts.komodor.io 2>&1)
     if [ $? -eq 0 ]; then
         echo "Added komodor chart repository successfully!"
@@ -326,7 +326,7 @@ installKomodorHelmPackage() {
     fi
     echo "Installing Komodor, this might take a minute"
     helm repo update >/dev/null 2>&2
-    INSTALL_OUTPUT=$(helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set watcher.actions.podExec=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s 2>&1)
+    INSTALL_OUTPUT=$(helm upgrade --install k8s-watcher komodorio/k8s-watcher --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s 2>&1)
     if [ $? -eq 0 ]; then
         echo "Komodor installed successfully!"
         sendAnalytics USER_INSTALL_KOMODOR_SCRIPT_SUCCESS
