@@ -261,7 +261,7 @@ function installKomodorHelmPackage() {
     Write-Output "Running the following helm commands:"
     Write-Output "- $ helm repo add komodorio https://helm-charts.komodor.io"
     Write-Output "- $ helm repo update"
-    Write-Output "- $ helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set watcher.actions.podExec=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s"
+    Write-Output "- $ helm upgrade --install k8s-watcher komodorio/k8s-watcher --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s"
     $INSTALL_OUTPUT = $( $output = & helm repo add komodorio https://helm-charts.komodor.io ) 2>&1
     Write-Output "$INSTALL_OUTPUT"
     if ($LASTEXITCODE -eq 0) {
@@ -274,7 +274,7 @@ function installKomodorHelmPackage() {
     }
     Write-Output "Installing Komodor, this might take a minute"
     helm repo update 2>$null | Out-Null
-    $INSTALL_OUTPUT = $( $output = & helm upgrade --install k8s-watcher komodorio/k8s-watcher --set watcher.actions.basic=true --set watcher.actions.advanced=true --set watcher.actions.podExec=true --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s) 2>&1
+    $INSTALL_OUTPUT = $( $output = & helm upgrade --install k8s-watcher komodorio/k8s-watcher --set apiKey=$HELM_API_KEY --set watcher.clusterName=$FINAL_CLUSTER_NAME --wait --timeout=90s) 2>&1
     Write-Output "$INSTALL_OUTPUT"
     if ($LASTEXITCODE -eq 0) {
         Write-Output "Komodor installed successfully!"
